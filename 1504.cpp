@@ -1,71 +1,66 @@
 #include <iostream>
 #include <algorithm>
-#include <string.h>
 #include <string>
 #include <vector>
 #include <queue>
-#include <functional>
+#include <string.h>
 #define MAXVAL 200000001
 
 using namespace std;
 
-typedef pair<int, int> p;
-int n, m, a, b, c, mid1, mid2;
-vector<vector<p>> adj;
-int visit[801], dist[801];
-priority_queue<p, vector<p>, greater<p>> pq;
+typedef pair<int, int> PI;
+int n, m, a, b, c, u, v, dist[801], answer, tmp1, tmp2;
+bool visit[801];
+vector<vector<PI>> adj;
 
-void dijkstra(int start) {
-	while (!pq.empty()) {
-		pq.pop();
-	}
-	fill(dist + 1, dist + 1 + n, MAXVAL);
-	memset(visit, 0, sizeof(visit));
-	pq.push({ 0, start });
-	dist[start] = 0;
-	while (!pq.empty()) {
-		int cur;
-		do {
-			cur = pq.top().second;
-			pq.pop();
-		} while (!pq.empty() && visit[cur]);
-		if (visit[cur])
-			break;
-		visit[cur] = 1;
-		for (auto i : adj[cur]) {
-			if (dist[i.first] > dist[cur] + i.second) {
-				dist[i.first] = dist[cur] + i.second;
-				pq.push({ dist[i.first], i.first });
-			}
-		}
-	}
+void dijkstra(int s) {
+    memset(visit, 0, sizeof(visit));
+    fill(dist, dist + n + 1, MAXVAL);
+    priority_queue<PI, vector<PI>, greater<PI>> pq;
+    dist[s] = 0;
+    pq.push({ 0, s });
+    while (!pq.empty()) {
+        int cur;
+        do {
+            cur = pq.top().second;
+            pq.pop();
+        } while (visit[cur] && !pq.empty());
+        if (visit[cur])
+            break;
+        for (auto next : adj[cur]) {
+            if (dist[next.first] > dist[cur] + next.second) {
+                dist[next.first] = dist[cur] + next.second;
+                pq.push({ dist[next.first], next.first });
+            }
+        }
+    }
 }
 
 int main() {
-	ios::sync_with_stdio(false);
-	cin.tie(0), cout.tie(0);
-	cin >> n >> m;
-	adj.resize(n + 1);
-	for (int i = 0; i < m; i++) {
-		cin >> a >> b >> c;
-		adj[a].push_back({ b, c });
-		adj[b].push_back({ a, c });
-	}
-	cin >> mid1 >> mid2;
-	
-	int ans1 = 0, ans2 = 0;
-	dijkstra(1);
-	ans1 += dist[mid1], ans2 += dist[mid2];
-	dijkstra(mid1);
-	ans1 += dist[mid2], ans2 += dist[n];
-	dijkstra(mid2);
-	ans1 += dist[n], ans2 += dist[mid1];
+    ios::sync_with_stdio(false);
+    cin.tie(0), cout.tie(0);
+    cin >> n >> m;
+    adj.resize(n + 1);
+    for (int i = 0; i < m; i++) {
+        cin >> a >> b >> c;
+        adj[a].push_back({ b, c });
+        adj[b].push_back({ a, c });
+    }
+    cin >> u >> v;
+    dijkstra(1);
+    tmp1 += dist[u];
+    tmp2 += dist[v];
+    dijkstra(u);
+    tmp1 += dist[v];
+    tmp2 += dist[n];
+    dijkstra(v);
+    tmp1 += dist[n];
+    tmp2 += dist[u];
+    answer = min(tmp1, tmp2);
+    if (answer >= MAXVAL)
+        cout << -1 << '\n';
+    else
+        cout << answer << '\n';
 
-	int ans = min(ans1, ans2);
-	if (ans >= MAXVAL)
-		cout << -1 << '\n';
-	else
-		cout << ans << '\n';
-
-	return 0;
+    return 0;
 }
